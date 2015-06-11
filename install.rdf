@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+    <Description about="urn:mozilla:install-manifest">
+        <em:id>{73d55a31-fddd-4039-9bab-e24a287c8e03}</em:id>
+        <em:type>2</em:type>
+        <em:name>Fennec Screenshot</em:name>
+        <em:version>0.1.4</em:version>
+        <em:bootstrap>true</em:bootstrap>
+        <em:description>Captures screenshot</em:description>
+        <em:creator>takachan</em:creator>
+        <em:optionsURL>chrome://fennecscreenshot/content/options.xul</em:optionsURL>
+
+        <em:localized>
+            <Description>
+                <em:locale>ja</em:locale>
+                <em:name>Fennec Screenshot</em:name>
+                <em:description>スクリーンショットを撮影します</em:description>
+                <em:creator>takachan</em:creator>
+            </Description>
+        </em:localized>
+
+        <!-- Firefox for Android -->
+        <em:targetApplication>
+            <Description>
+                <em:id>{aa3c5121-dab2-40e2-81ca-7ea25febc110}</em:id>
+                <em:minVersion>15.0</em:minVersion>
+                <em:maxVersion>20.0a1</em:maxVersion>
+            </Description>
+        </em:targetApplication>
+    </Description>
+</RDF>
