@@ -209,17 +209,17 @@ let FennecScreenshot = {
     }
 
     let canvas = document.createElement('canvas');
+    let ctx = canvas.getContext('2d');
+    let dpr = window.devicePixelRatio;
+    w *= dpr;
+    h *= dpr;
     canvas.width = w;
     canvas.height = h;
-    canvas.style.display = 'none';
+    ctx.scale(dpr, dpr);
 
     document.body.appendChild(canvas);
 
-    let context2d = canvas.getContext('2d');
-
-    // TODO https://bugzilla.mozilla.org/show_bug.cgi?id=780362#c10
-    // https://github.com/luser/asteroids/blob/master/asteroids.js#L42
-    context2d.drawWindow(window, x, y, w, h, '#ffffff', 0x01 | 0x08);
+    ctx.drawWindow(window, x, y, w, h, '#ffffff');
 
     let captureData = {
       dataURL: canvas.toDataURL(aFormat),

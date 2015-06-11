@@ -1,9 +1,8 @@
 ### About ###
 
 A fork of https://addons.mozilla.org/en-US/android/addon/fennec-screenshot/.
-Orignally authored by TakaChan.
 
-Original README:
+Originally authored by TakaChan.
 
 This add-on provides a screen capture feature.
 Full page and visible area can be captured.
