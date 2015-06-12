@@ -135,6 +135,15 @@ let FennecScreenshot = {
           }
         });
       }
+
+      // Capture from list menu item
+      this._menuIds['CaptureList'] = menu.add({
+        name: tr('CaptureList'),
+        parent: this._menuIds['ScreenshotMenu'],
+        callback: function() {
+          log("Do stuff with sites.txt");
+        }
+      });
     }
   },
 
