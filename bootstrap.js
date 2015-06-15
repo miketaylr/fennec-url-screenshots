@@ -50,6 +50,7 @@ let DEBUG = true;
 let FennecScreenshot = {
   _branch: null,
   _menuIds: {},
+  _siteList: "chrome://fennecscreenshot/content/sites.txt",
 
   setupDefaultPrefs: function() {
     let branch = Services.prefs.getDefaultBranch('extensions.fennecscreenshot.');
@@ -140,9 +141,7 @@ let FennecScreenshot = {
       this._menuIds['CaptureList'] = menu.add({
         name: tr('CaptureList'),
         parent: this._menuIds['ScreenshotMenu'],
-        callback: function() {
-          log("Do stuff with sites.txt");
-        }
+        callback: () => self._readList(aWindow)
       });
     }
   },
@@ -172,7 +171,19 @@ let FennecScreenshot = {
     }
   },
 
-  _capture: function(aWindow, aCaptureArea, aFormat) {
+  _readList: function(aWindow) {
+    log("Loading the site list...");
+    var xhr = new aWindow.XMLHttpRequest();
+    xhr.open("GET", this._siteList);
+    xhr.reponseType = "text";
+    xhr.onload = () => {
+      var txt = xhr.responseText;
+      var aSitesArray = txt.split(/\n/);
+      this._takeScreenshots(aWindow, aSitesArray);
+    }
+    xhr.send();
+  },
+
     let selectedTab = aWindow.BrowserApp.selectedTab;
     let window = selectedTab.window;
     let document = window.document;
