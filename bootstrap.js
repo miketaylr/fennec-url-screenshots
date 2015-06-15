@@ -38,8 +38,12 @@
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
-Cu.import('resource://gre/modules/Services.jsm');
+
+Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
+Cu.import("resource://gre/modules/Task.jsm");
+
+let {Promise: promise} = Cu.import("resource://gre/modules/Promise.jsm", {});
 
 // Set to true or false if you want logging.
 let DEBUG = true;
@@ -184,6 +188,55 @@ let FennecScreenshot = {
     xhr.send();
   },
 
+  _loadTab: function(aWindow, aUrl) {
+    let deferred = promise.defer();
+
+    //question: how to handle redirects?
+    //XHR and find the 3XX?
+    //what about JS redirects?
+    let tab = aWindow.BrowserApp.loadURI(aUrl);
+    let browser = aWindow.BrowserApp.selectedBrowser;
+
+    browser.addEventListener("load", function onLoad() {
+      browser.removeEventListener("load", onLoad, true);
+      //arbitrarily wait for 2 seconds after load.
+      aWindow.setTimeout(() => deferred.resolve({tab: tab, browser: browser}), 2000);
+    }, true);
+
+    return deferred.promise;
+  },
+
+  _takeScreenshots: function(aWindow, aSitesArray) {
+    let self = this;
+    let format = (this._branch && this._branch.getBoolPref('use_jpeg'))
+                  ? 'image/jpeg'
+                  : 'image/png';
+    let dpr = aWindow.BrowserApp.selectedTab.window.devicePixelRatio;
+
+    Task.spawn(function* () {
+      for (let site of aSitesArray) {
+        //so site works here.
+        //i need to yield on a function that loads stuff.
+        yield self._loadTab(aWindow, site);
+
+        //just defaulting to 'visible' for now
+        let captureData;
+        try {
+          captureData = self._capture(aWindow, 'visible', format, dpr);
+        } catch (e) {
+          log('Something bad happened: ' + e);
+          log('Trying again with a lower scale');
+          captureData = self._capture(aWindow, 'visible', format, 1);
+        }
+
+        if (captureData) {
+          self._saveImage(aWindow, captureData);
+        }
+      }
+    }).catch((e) => log(e));
+  },
+
+  _capture: function(aWindow, aCaptureArea, aFormat, aScale) {
     let selectedTab = aWindow.BrowserApp.selectedTab;
     let window = selectedTab.window;
     let document = window.document;
@@ -230,7 +283,7 @@ let FennecScreenshot = {
 
     let canvas = document.createElement('canvas');
     let ctx = canvas.getContext('2d');
-    let dpr = window.devicePixelRatio;
+    let dpr = aScale;
     w *= dpr;
     h *= dpr;
     canvas.width = w;
@@ -250,6 +303,8 @@ let FennecScreenshot = {
     };
 
     document.body.removeChild(canvas);
+    ctx = null;
+    canvas = null;
 
     return captureData;
   },
