@@ -328,13 +328,8 @@ let FennecScreenshot = {
 
     let caUtils = aWindow.ContentAreaUtils;
 
-    var fileName = caUtils.getDefaultFileName(
-                                document.title,
-                                selectedTab.browser.currentURI,
-                                document,
-                                null).trim();
-
-    var fileName = caUtils.getNormalizedLeafName(fileName,
+    // create the file name from document.domain and whatever format we're using
+    var fileName = caUtils.getNormalizedLeafName(document.domain,
                                                  aCaptureData.extension);
 
     let file = downloadDir.clone();
