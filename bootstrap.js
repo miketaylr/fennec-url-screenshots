@@ -241,7 +241,13 @@ let FennecScreenshot = {
         } catch (e) {
           log('Something bad happened: ' + e);
           log('Trying again with a lower scale');
-          captureData = self._capture(aWindow, 'visible', format, 1);
+          try {
+            captureData = self._capture(aWindow, 'visible', format, 2);
+          } catch (e) {
+            log('Something bad happened: ' + e);
+            log('Trying again with the lowest scale');
+            captureData = self._capture(aWindow, 'visible', format, 1);
+          }
         }
 
         if (captureData) {
@@ -274,8 +280,8 @@ let FennecScreenshot = {
         let viewport = selectedTab.getViewport();
         x = viewport.cssX; // == html.scrollLeft;
         y = viewport.cssY; // == html.scrollTop;
-        w = Math.round(viewport.cssWidth);
-        h = Math.round(viewport.cssHeight);
+        w = window.innerWidth;
+        h = window.innerHeight;
         break;
 
       default:
