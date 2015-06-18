@@ -99,6 +99,7 @@ let FennecScreenshot = {
   setupUI: function(aWindow) {
     let self = this;
     let menu = aWindow.NativeWindow.menu;
+    let dpr = aWindow.BrowserApp.selectedTab.window.devicePixelRatio;
 
     let visible_enabled = this._branch.getBoolPref('capture_visible.enabled');
     let entire_enabled = this._branch.getBoolPref('capture_entire.enabled');
@@ -118,7 +119,7 @@ let FennecScreenshot = {
                           ? 'image/jpeg'
                           : 'image/png';
 
-            let captureData = self._capture(aWindow, 'visible', format);
+            let captureData = self._capture(aWindow, 'visible', format, dpr);
             if (captureData) {
               self._saveImage(aWindow, captureData);
             }
@@ -135,7 +136,7 @@ let FennecScreenshot = {
                                 ? 'image/jpeg'
                                 : 'image/png';
 
-            let captureData = self._capture(aWindow, 'entire', format);
+            let captureData = self._capture(aWindow, 'entire', format, dpr);
             if (captureData)
                 self._saveImage(aWindow, captureData);
           }
@@ -237,16 +238,17 @@ let FennecScreenshot = {
         //just defaulting to 'visible' for now
         let captureData;
         try {
-          captureData = self._capture(aWindow, 'visible', format, dpr);
+          log('Trying with scale: ' + dpr);
+          captureData = self._capture(aWindow, 'entire', format, dpr);
         } catch (e) {
           log('Something bad happened: ' + e);
-          log('Trying again with a lower scale');
+          log('Trying again with a lower scale: 2');
           try {
-            captureData = self._capture(aWindow, 'visible', format, 2);
+            captureData = self._capture(aWindow, 'entire', format, 2);
           } catch (e) {
             log('Something bad happened: ' + e);
-            log('Trying again with the lowest scale');
-            captureData = self._capture(aWindow, 'visible', format, 1);
+            log('Trying again with the lowest scale: 1');
+            captureData = self._capture(aWindow, 'entire', format, 1);
           }
         }
 
