@@ -303,21 +303,24 @@ let FennecScreenshot = {
 
     let canvas = document.createElement('canvas');
     let ctx = canvas.getContext('2d');
-    let dpr = aScale;
-    w *= dpr;
-    h *= dpr;
-    canvas.width = w;
-    canvas.height = h;
-    ctx.scale(dpr, dpr);
+
+    function setScale(scale) {
+      scaled_w = scale * w;
+      scaled_h = scale * h;
+      canvas.width = scaled_w;
+      canvas.height = scaled_h;
+      ctx.scale(scale, scale);
+    }
+
+    setScale(aScale);
 
     document.body.appendChild(canvas);
-
     ctx.drawWindow(window, x, y, w, h, '#ffffff');
 
     let captureData = {
       dataURL: canvas.toDataURL(aFormat),
-      width: w,
-      height: h,
+      width: scaled_w,
+      height: scaled_h,
       dataType: aFormat,
       extension: ext,
     };
