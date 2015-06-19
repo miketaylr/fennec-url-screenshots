@@ -42,6 +42,7 @@ const Cu = Components.utils;
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/PrivateBrowsingUtils.jsm");
 Cu.import("resource://gre/modules/Task.jsm");
+Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 
 let {Promise: promise} = Cu.import("resource://gre/modules/Promise.jsm", {});
 
@@ -191,20 +192,33 @@ let FennecScreenshot = {
 
   _loadTab: function(aWindow, aUrl) {
     let deferred = promise.defer();
-
-    //question: how to handle redirects?
-    //need to set up a web progress listener.
-    //XHR and find the 3XX?
-
-    let tab = aWindow.BrowserApp.loadURI(aUrl);
     let browser = aWindow.BrowserApp.selectedBrowser;
 
-    browser.addEventListener("load", function onLoad() {
-      browser.removeEventListener("load", onLoad, true);
-      //arbitrarily wait for 10 seconds after load.
-      //there might be some slow AJAX junk
-      aWindow.setTimeout(() => deferred.resolve(), 10000);
-    }, true);
+    const STATE_START = Ci.nsIWebProgressListener.STATE_START;
+    const STATE_STOP = Ci.nsIWebProgressListener.STATE_STOP;
+    let loadListener = {
+        QueryInterface: XPCOMUtils.generateQI(["nsIWebProgressListener",
+                                               "nsISupportsWeakReference"]),
+        onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
+            // We should be loaded here.
+            // stolen from https://bug1166132.bugzilla.mozilla.org/attachment.cgi?id=8621067
+            let loadedState = Ci.nsIWebProgressListener.STATE_STOP |
+                              Ci.nsIWebProgressListener.STATE_IS_NETWORK;
+             if ((aStateFlags & loadedState) == loadedState && !aWebProgress.isLoadingDocument &&
+                  aWebProgress.DOMWindow == aWebProgress.DOMWindow.top) {
+                browser.removeProgressListener(loadListener);
+                deferred.resolve();
+            }
+        },
+        onLocationChange: function(aProgress, aRequest, aURI) {},
+        onProgressChange: function(aWebProgress, aRequest, curSelf, maxSelf, curTot, maxTot) {},
+        onStatusChange: function(aWebProgress, aRequest, aStatus, aMessage) {},
+        onSecurityChange: function(aWebProgress, aRequest, aState) {}
+    }
+
+    browser.addProgressListener(loadListener);
+    let tab = aWindow.BrowserApp.loadURI(aUrl);
+
 
     return deferred.promise;
   },
