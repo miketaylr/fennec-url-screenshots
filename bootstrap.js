@@ -217,34 +217,44 @@ let FennecScreenshot = {
     let dpr = aWindow.BrowserApp.selectedTab.window.devicePixelRatio;
 
     Task.spawn(function* () {
+      // manually change to entire or visible.
+      let mode = 'entire';
       for (let site of aSitesArray) {
-        //so site works here.
-        //i need to yield on a function that loads stuff.
         yield self._loadTab(aWindow, site);
 
-        //just defaulting to 'visible' for now
         let captureData;
         try {
           log('Trying with scale: ' + dpr);
-          captureData = self._capture(aWindow, 'entire', format, dpr);
+          captureData = self._capture(aWindow, mode, format, dpr);
         } catch (e) {
           log('Something bad happened: ' + e);
           log('Trying again with a lower scale: 2');
           try {
-            captureData = self._capture(aWindow, 'entire', format, 2);
+            captureData = self._capture(aWindow, mode, format, 2);
           } catch (e) {
             log('Something bad happened: ' + e);
             log('Trying again with the lowest scale: 1');
-            captureData = self._capture(aWindow, 'entire', format, 1);
+            try {
+              captureData = self._capture(aWindow, mode, format, 1);
+            } catch (e) {
+              log('No dice. ' + e);
+              // We probably ran into some crap like:
+              //Failed to create a SkiaGL DrawTarget, falling back to software
+              //Failed to create DrawTarget, Type: 5 Size: Size(2160,15031)
+            }
           }
         }
 
         if (captureData) {
           self._saveImage(aWindow, captureData);
+        } else {
+          self._noop();
         }
       }
     }).catch((e) => log(e));
   },
+
+  _noop: function() {},
 
   _capture: function(aWindow, aCaptureArea, aFormat, aScale) {
     let selectedTab = aWindow.BrowserApp.selectedTab;
