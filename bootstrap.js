@@ -246,9 +246,9 @@ let FennecScreenshot = {
         }
 
         if (captureData) {
-          self._saveImage(aWindow, captureData);
+          yield self._saveImage(aWindow, captureData);
         } else {
-          self._noop();
+          yield self._noop();
         }
       }
     }).catch((e) => log(e));
