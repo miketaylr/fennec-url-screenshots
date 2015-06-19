@@ -8,10 +8,10 @@ It attempts to use the DPI of the device, but will scale down in the case of an 
 
 ### Usage
 
-1) `mv content/sites.txt.example content/sites.txt
-2) Add the sites you want to test
-3) `./build` (after setting correct target)
-4) From the Fennec menu, select Screenshot > Capture from sites.txt
+1. `mv content/sites.txt.example content/sites.txt
+2. Add the sites you want to test
+3. `./build` (after setting correct target)
+4. From the Fennec menu, select Screenshot > Capture from sites.txt
 
 The captured image will be saved as PNG format in your Downloads folder.  
 If you need to save it as JPEG, please turn on the use_jpeg option.  
