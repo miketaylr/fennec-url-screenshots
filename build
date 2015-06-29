@@ -17,7 +17,7 @@ zip -r $XPI bootstrap.js \
             content \
             locale \
             icon.png \
-            icon.64.png \
+            icon64.png \
             LICENSE.txt
     -x *.DS_Store*
 
