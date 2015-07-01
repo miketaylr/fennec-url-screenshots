@@ -194,31 +194,13 @@ let FennecScreenshot = {
     let deferred = promise.defer();
     let browser = aWindow.BrowserApp.selectedBrowser;
 
-    const STATE_START = Ci.nsIWebProgressListener.STATE_START;
-    const STATE_STOP = Ci.nsIWebProgressListener.STATE_STOP;
-    let loadListener = {
-        QueryInterface: XPCOMUtils.generateQI(["nsIWebProgressListener",
-                                               "nsISupportsWeakReference"]),
-        onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
-            // We should be loaded here.
-            // stolen from https://bug1166132.bugzilla.mozilla.org/attachment.cgi?id=8621067
-            let loadedState = Ci.nsIWebProgressListener.STATE_STOP |
-                              Ci.nsIWebProgressListener.STATE_IS_NETWORK;
-             if ((aStateFlags & loadedState) == loadedState && !aWebProgress.isLoadingDocument &&
-                  aWebProgress.DOMWindow == aWebProgress.DOMWindow.top) {
-                browser.removeProgressListener(loadListener);
-                deferred.resolve();
-            }
-        },
-        onLocationChange: function(aProgress, aRequest, aURI) {},
-        onProgressChange: function(aWebProgress, aRequest, curSelf, maxSelf, curTot, maxTot) {},
-        onStatusChange: function(aWebProgress, aRequest, aStatus, aMessage) {},
-        onSecurityChange: function(aWebProgress, aRequest, aState) {}
-    }
+    browser.addEventListener("load", function onLoad() {
+      browser.removeEventListener("load", onLoad, true);
+      //wait 5 seconds to let the site assets load a bit.
+      aWindow.setTimeout(() => deferred.resolve(), 5000);
+    }, true);
 
-    browser.addProgressListener(loadListener);
-    let tab = aWindow.BrowserApp.loadURI(aUrl);
-
+    aWindow.BrowserApp.loadURI(aUrl);
 
     return deferred.promise;
   },
@@ -260,8 +242,10 @@ let FennecScreenshot = {
         }
 
         if (captureData) {
+          log('OFF TO SAVE IMAGE');
           yield self._saveImage(aWindow, captureData);
         } else {
+          log('STUCK IN A NOOP');
           yield self._noop();
         }
       }
@@ -280,7 +264,7 @@ let FennecScreenshot = {
         return null;
     }
 
-    let x, y, w, h;
+    let x, y, w, h, scaled_w, scaled_h;
     switch (aCaptureArea) {
       case 'entire':
         let html = document.documentElement;
@@ -413,6 +397,8 @@ let FennecScreenshot = {
                                            .QueryInterface(Ci.nsILoadContext);
 
     wbp.saveURI(sourceURI, null, null, 0, null, null, destURI, privacyContext);
+
+    return true;
   }
 };
 
